@@ -42,7 +42,10 @@ import {
 } from './types';
 
 export const floatingBubbleProps = {
-  gap: makeNumberProp(24),
+  gap: {
+    type: [Number, Array] as PropType<number | [number, number]>,
+    default: 24
+  },
   icon: String,
   axis: makeStringProp<FloatingBubbleAxis>('y'),
   magnetic: String as PropType<FloatingBubbleMagnetic>,
@@ -71,6 +74,7 @@ export default defineComponent({
 
   setup(props, { slots, emit, attrs }) {
     const rootRef = ref<HTMLDivElement>();
+    const [gapX, gapY] = Array.isArray(props.gap) ? props.gap : [props.gap, props.gap]
 
     const state = ref({
       x: 0,
@@ -80,10 +84,10 @@ export default defineComponent({
     });
 
     const boundary = computed<FloatingBubbleBoundary>(() => ({
-      top: props.gap,
-      right: windowWidth.value - state.value.width - props.gap,
-      bottom: windowHeight.value - state.value.height - props.gap,
-      left: props.gap,
+      top: gapY,
+      right: windowWidth.value - state.value.width - gapX,
+      bottom: windowHeight.value - state.value.height - gapY,
+      left: gapX,
     }));
 
     const dragging = ref(false);
@@ -110,8 +114,8 @@ export default defineComponent({
       const { width, height } = useRect(rootRef.value!);
       const { offset } = props;
       state.value = {
-        x: offset.x > -1 ? offset.x : windowWidth.value - width - props.gap,
-        y: offset.y > -1 ? offset.y : windowHeight.value - height - props.gap,
+        x: offset.x > -1 ? offset.x : windowWidth.value - width - gapX,
+        y: offset.y > -1 ? offset.y : windowHeight.value - height - gapY,
         width,
         height,
       };
